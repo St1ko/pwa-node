@@ -48,6 +48,35 @@ app.post("/notifications/subscribe", (req, res) => {
   res.status(200).json({ success: true });
 });
 
+app.post("/notifications/send", (req, res) => {
+  ({ title, message } = req.body);
+
+  fs.readFile("subscribers.json", (err, data) => {
+    const subscribers = JSON.parse(data);
+
+    for (let subscriber of subscribers) {
+      const pushSubscription = {
+        endpoint: subscriber.endpoint,
+        keys: subscriber.keys,
+      };
+
+      webpush
+        .sendNotification(
+          pushSubscription,
+          `{"title":"${title}","message":"${message}"}`
+        )
+        .then((result) => {
+          console.log(`Message send to ${pushSubscription.endpoint}`);
+        })
+        .catch((e) => {
+          console.log(`Message not send to ${pushSubscription.endpoint}`);
+        });
+    }
+  });
+
+  res.status(200).json({ success: true });
+});
+
 app.listen(9000, () =>
   console.log("The server has been started on the port 9000")
 );
