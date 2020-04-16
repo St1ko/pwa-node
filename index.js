@@ -25,9 +25,14 @@ app.get("/", (req, res) => {
 app.post("/notifications/subscribe", (req, res) => {
   const subscription = req.body;
 
-  fs.appendFile("subscribers.json", JSON.stringify(subscription), (err) => {
-    if (err) throw err;
-    console.log("New subscription appended to subscribers.json");
+  fs.readFile("subscribers.json", (err, data) => {
+    const subscribers = JSON.parse(data);
+    subscribers.push(subscription);
+
+    fs.writeFile("subscribers.json", JSON.stringify(subscribers), (err) => {
+      if (err) throw err;
+      console.log("New subscription appended to subscribers.json");
+    });
   });
 
   const payload = JSON.stringify({
